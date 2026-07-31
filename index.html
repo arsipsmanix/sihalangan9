@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiHalangan</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; margin-bottom: 20px; font-size: 24px;}
+        select, button, input[type="date"] { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 15px;}
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .btn-primary { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .btn-print { background-color: #6c757d; color: white; border: none; cursor: pointer; }
+        
+        .student-item { display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .student-info { width: 35%; display: flex; align-items: center; gap: 10px; font-weight: bold;}
+        .history-container { width: 65%; display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px;}
+        
+        /* Checkbox styling */
+        .check-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #ccc; background: white; cursor: pointer; display: inline-block; }
+        .check-btn.red { background-color: #dc3545; border-color: #dc3545; }
+
+        /* History Boxes */
+        .history-box { min-width: 40px; height: 40px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: bold;}
+        .box-green { background-color: #28a745; }
+        .box-red { background-color: #dc3545; }
+        .history-label { display: flex; flex-direction: column; align-items: center; font-size: 11px; }
+
+        .loading { text-align: center; font-style: italic; color: #666; display: none; }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; }
+            .controls, .check-btn, .action-area { display: none; }
+            .student-item { border: 1px solid #000; padding: 5px; }
+            .history-box { border: 1px solid #000; color: black; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Presensi Halangan Shalat</h1>
+    <div class="controls">
+        <select id="kelasSelect">
+            <option value="">-- Pilih Kelas --</option>
+        </select>
+        <input type="date" id="tanggalInput" required>
+        <button class="btn-primary" onclick="loadData()">Tampilkan</button>
+        <button class="btn-print" onclick="cetakDanReset()">Cetak Rekap</button>
+    </div>
+
+    <div id="loading" class="loading">Memuat data...</div>
+    
+    <div id="studentList"></div>
+    
+    <div class="controls action-area" style="margin-top: 20px; display: none;" id="saveArea">
+        <button class="btn-primary" onclick="simpanPresensi()" style="width: 100%;">Simpan Presensi Hari Ini</button>
+    </div>
+</div>
+
+<script>
+    // MASUKKAN URL WEB APP GAS ANDA DI SINI
+    const API_URL = "https://script.google.com/macros/s/AKfycbyuicKD7tJVwcaJ7w2dXR99lgiNGiQK2YhKt0f-GcLqRZ7NmsogePWmgjIzZgW3B9nM/exec"; 
+    
+    let currentData = { students: [], dates: [], logs: [] };
+    let todayReds = new Set();
+
+    // Set tanggal hari ini sebagai default
+    document.getElementById('tanggalInput').valueAsDate = new Date();
+
+    // Ambil daftar kelas saat halaman dimuat
+    fetch(`${API_URL}?action=get_classes`)
+        .then(res => res.json())
+        .then(classes => {
+            const select = document.getElementById('kelasSelect');
+            classes.forEach(c => {
+                let opt = document.createElement('option');
+                opt.value = c; opt.innerHTML = c; select.appendChild(opt);
+            });
+        });
+
+    function showLoading(show) {
+        document.getElementById('loading').style.display = show ? 'block' : 'none';
+        document.getElementById('studentList').style.display = show ? 'none' : 'block';
+    }
+
+    function loadData() {
+        const kelas = document.getElementById('kelasSelect').value;
+        if (!kelas) return alert("Pilih kelas terlebih dahulu");
+        
+        showLoading(true);
+        fetch(`${API_URL}?action=get_data&kelas=${kelas}`)
+            .then(res => res.json())
+            .then(data => {
+                currentData = data;
+                todayReds.clear();
+                renderStudents();
+                showLoading(false);
+                document.getElementById('saveArea').style.display = 'block';
+            });
+    }
+
+    function renderStudents() {
+        const container = document.getElementById('studentList');
+        container.innerHTML = '';
+
+        currentData.students.forEach(student => {
+            const div = document.createElement('div');
+            div.className = 'student-item';
+
+            // Checkbox hari ini
+            const checkBtn = document.createElement('div');
+            checkBtn.className = 'check-btn';
+            checkBtn.onclick = () => {
+                checkBtn.classList.toggle('red');
+                if(checkBtn.classList.contains('red')) todayReds.add(student.id);
+                else todayReds.delete(student.id);
+            };
+
+            const info = document.createElement('div');
+            info.className = 'student-info';
+            info.appendChild(checkBtn);
+            info.innerHTML += ` <span>${student.nama}</span>`;
+
+            // Riwayat
+            const history = document.createElement('div');
+            history.className = 'history-container';
+            
+            currentData.dates.forEach(date => {
+                // Format DD/MM
+                const dateStr = date.split('-')[2] + '/' + date.split('-')[1];
+                const isRed = currentData.logs.some(log => log.id_siswa == student.id && log.tanggal === date);
+                
+                const boxWrapper = document.createElement('div');
+                boxWrapper.className = 'history-label';
+                
+                const box = document.createElement('div');
+                box.className = `history-box ${isRed ? 'box-red' : 'box-green'}`;
+                box.innerText = dateStr;
+                
+                boxWrapper.appendChild(box);
+                history.appendChild(boxWrapper);
+            });
+
+            div.appendChild(info);
+            div.appendChild(history);
+            container.appendChild(div);
+        });
+    }
+
+    function simpanPresensi() {
+        const kelas = document.getElementById('kelasSelect').value;
+        const tanggal = document.getElementById('tanggalInput').value;
+        
+        if(!kelas || !tanggal) return alert("Kelas dan Tanggal harus diisi!");
+        
+        document.getElementById('saveArea').innerHTML = "Menyimpan...";
+        
+        const payload = {
+            action: 'save',
+            kelas: kelas,
+            tanggal: tanggal,
+            red_students: Array.from(todayReds)
+        };
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+            alert("Data berhasil disimpan!");
+            document.getElementById('saveArea').innerHTML = `<button class="btn-primary" onclick="simpanPresensi()" style="width: 100%;">Simpan Presensi Hari Ini</button>`;
+            loadData(); // Refresh UI
+        });
+    }
+
+    function cetakDanReset() {
+        const kelas = document.getElementById('kelasSelect').value;
+        if (!kelas) return alert("Pilih kelas yang akan dicetak");
+
+        // 1. Memicu Dialog Print Browser
+        window.print();
+
+        // 2. Konfirmasi Reset (muncul setelah dialog print selesai/ditutup)
+        setTimeout(() => {
+            const confirmReset = confirm("Rekap telah dicetak. Apakah Anda ingin mereset history dan hanya menyisakan data terakhir?");
+            if (confirmReset) {
+                showLoading(true);
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'reset', kelas: kelas })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    alert("History berhasil direset.");
+                    loadData(); // Refresh layar
+                });
+            }
+        }, 500);
+    }
+</script>
+
+</body>
+</html>
