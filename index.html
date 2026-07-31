@@ -129,26 +129,41 @@
             const div = document.createElement('div');
             div.className = 'student-item';
 
-            // Checkbox hari ini
+            // --- Mulai Pembuatan Tombol Checkbox ---
             const checkBtn = document.createElement('div');
             checkBtn.className = 'check-btn';
-            checkBtn.onclick = () => {
-                checkBtn.classList.toggle('red');
-                if(checkBtn.classList.contains('red')) todayReds.add(student.id);
-                else todayReds.delete(student.id);
+            
+            // LOGIKA PENTING: Inilah yang membuat tombol bisa diklik dan berubah warna
+            checkBtn.onclick = function() {
+                // Toggled (tukar) kelas 'red'. Jika ada, hapus. Jika tidak ada, tambahkan.
+                this.classList.toggle('red');
+                
+                // Perbarui daftar presensi merah (todayReds)
+                if(this.classList.contains('red')) {
+                    todayReds.add(student.id);
+                } else {
+                    todayReds.delete(student.id);
+                }
+                
+                console.log("Siswa dengan ID", student.id, "dipilih sebagai berhalangan.");
             };
+            // --- Selesai Pembuatan Tombol Checkbox ---
 
+            // --- Mulai Pembuatan Info Siswa (menggunakan appendChild agar tombol tidak rusak) ---
             const info = document.createElement('div');
             info.className = 'student-info';
             info.appendChild(checkBtn);
-            info.innerHTML += ` <span>${student.nama}</span>`;
+            
+            const spanNama = document.createElement('span');
+            spanNama.innerText = student.nama;
+            info.appendChild(spanNama);
+            // --- Selesai Pembuatan Info Siswa ---
 
-            // Riwayat
+            // --- Mulai Pembuatan Riwayat (tetap sama) ---
             const history = document.createElement('div');
             history.className = 'history-container';
             
             currentData.dates.forEach(date => {
-                // Format DD/MM
                 const dateStr = date.split('-')[2] + '/' + date.split('-')[1];
                 const isRed = currentData.logs.some(log => log.id_siswa == student.id && log.tanggal === date);
                 
@@ -162,14 +177,15 @@
                 boxWrapper.appendChild(box);
                 history.appendChild(boxWrapper);
             });
+            // --- Selesai Pembuatan Riwayat ---
 
             div.appendChild(info);
             div.appendChild(history);
             container.appendChild(div);
         });
     }
-
-    function simpanPresensi() {
+        
+        function simpanPresensi() {
         const kelas = document.getElementById('kelasSelect').value;
         const tanggal = document.getElementById('tanggalInput').value;
         
