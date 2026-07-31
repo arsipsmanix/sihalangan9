@@ -20,11 +20,22 @@
         .btn-print { background-color: #6c757d; color: white; border: none; cursor: pointer; }
         
         .student-item { display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .student-info { width: 35%; display: flex; align-items: center; gap: 10px; font-weight: bold;}
-        .history-container { width: 65%; display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px;}
-        
-        /* Checkbox styling */
-        .check-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #ccc; background: white; cursor: pointer; display: inline-block; }
+        /* Ubah persentase lebar agar nama siswa punya ruang lebih luas di HP */
+.student-info { width: 50%; display: flex; align-items: center; gap: 10px; font-weight: bold;}
+.history-container { width: 50%; display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px;}
+
+/* Tambahkan min-width dan flex-shrink pada check-btn */
+.check-btn { 
+    width: 25px; 
+    height: 25px; 
+    min-width: 25px; /* Mencegah berubah ukuran */
+    flex-shrink: 0;  /* Mencegah tergencet teks yang panjang */
+    border-radius: 50%; 
+    border: 2px solid #ccc; 
+    background: white; 
+    cursor: pointer; 
+    display: inline-block; 
+}
         .check-btn.red { background-color: #dc3545; border-color: #dc3545; }
 
         /* History Boxes */
