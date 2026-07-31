@@ -47,12 +47,56 @@
         .loading { text-align: center; font-style: italic; color: #666; display: none; }
 
         /* Print Styles */
+        /* Print Styles - Update Terbaru */
         @media print {
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; }
-            .controls, .check-btn, .action-area { display: none; }
-            .student-item { border: 1px solid #000; padding: 5px; }
-            .history-box { border: 1px solid #000; color: black; }
+            /* 1. Paksa browser mencetak warna kotak (Hijau/Merah) */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* 2. Atur ukuran kertas dan margin agar luas */
+            @page {
+                size: A4 portrait;
+                margin: 1cm; 
+            }
+
+            body { 
+                background: white; 
+                padding: 0; 
+                font-size: 11px; /* Font dikecilkan agar muat banyak */
+            }
+            
+            .container { 
+                box-shadow: none; 
+                max-width: 100%; 
+                padding: 0;
+            }
+
+            /* 3. Sembunyikan elemen UI yang tidak perlu dicetak */
+            .controls, .check-btn, .action-area, img.main-logo { 
+                display: none !important; 
+            }
+
+            /* 4. Rapatkan jarak antar siswa (Target: 35+ anak muat 1 halaman) */
+            .student-item { 
+                border-bottom: 1px solid #ccc; 
+                padding: 4px 0; /* Padding atas bawah dikecilkan */
+                page-break-inside: avoid; /* Mencegah baris nama terpotong antar halaman */
+            }
+
+            /* Lebar disesuaikan untuk kertas */
+            .student-info { width: 40%; font-size: 12px;}
+            .history-container { width: 60%; }
+
+            /* 5. Sesuaikan ukuran kotak riwayat agar rapi di kertas */
+            .history-box { 
+                border: 1px solid #000; 
+                color: white !important; /* Kembalikan font putih karena background berwarna sudah muncul */
+                height: 20px; /* Kotak dipendekkan */
+                min-width: 20px;
+                font-size: 9px;
+            }
         }
     </style>
 </head>
