@@ -64,6 +64,39 @@
     <div class="controls">
         <select id="kelasSelect">
             <option value="">-- Pilih Kelas --</option>
+            <!-- Tulis daftar kelas secara manual di sini -->
+            <option value="X-1">X-1</option>
+            <option value="X-2">X-2</option>
+            <option value="X-3">X-3</option>
+            <option value="X-4">X-4</option>
+            <option value="X-5">X-5</option>
+            <option value="X-6">X-6</option>
+            <option value="X-7">X-7</option>
+            <option value="X-8">X-8</option>
+            <option value="X-9">X-9</option>
+            <option value="X-10">X-10</option>
+            <option value="X-11">X-11</option>
+            <option value="XI A-1">XI A-1</option>
+            <option value="XI A-2">XI A-2</option>
+            <option value="XI A-3">XI A-3</option>
+            <option value="XI A-4">XI A-4</option>
+            <option value="XI B">XI B</option>
+            <option value="XI C-1">XI C-1</option>
+             <option value="XI C-2">XI C-2</option>
+            <option value="XI C-3">XI C-3</option>
+             <option value="XI D-1">XI D-1</option>
+             <option value="XI D-2">XI D-2</option>
+             <option value="XII A-1">XII A-1</option>
+             <option value="XII A-2">XII A-2</option>
+             <option value="XII A-3">XII A-3</option>
+             <option value="XII A-4">XII A-4</option>
+            <option value="XII B">XII B</option>
+            <option value="XII C-1">XII C-1</option>
+             <option value="XII C-2">XII C-2</option>
+            <option value="XII C-3">XII C-3</option>
+             <option value="XII C-4">XII C-4</option>
+             <option value="XII D">XII D</option>
+            <!-- Tambahkan terus sesuai jumlah kelas di SMAN 9 -->
         </select>
         <input type="date" id="tanggalInput" required>
         <button class="btn-primary" onclick="loadData()">Tampilkan</button>
@@ -88,17 +121,6 @@
 
     // Set tanggal hari ini sebagai default
     document.getElementById('tanggalInput').valueAsDate = new Date();
-
-    // Ambil daftar kelas saat halaman dimuat
-    fetch(`${API_URL}?action=get_classes`)
-        .then(res => res.json())
-        .then(classes => {
-            const select = document.getElementById('kelasSelect');
-            classes.forEach(c => {
-                let opt = document.createElement('option');
-                opt.value = c; opt.innerHTML = c; select.appendChild(opt);
-            });
-        });
 
     function showLoading(show) {
         document.getElementById('loading').style.display = show ? 'block' : 'none';
