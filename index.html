@@ -46,6 +46,9 @@
 
         .loading { text-align: center; font-style: italic; color: #666; display: none; }
 
+        /* Secara default sembunyikan judul print di layar HP/Laptop */
+        .print-only { display: none; }
+
         /* Print Styles */
         /* Print Styles - Update Terbaru */
         @media print {
@@ -78,6 +81,18 @@
                 display: none !important; 
             }
 
+            /* Tampilkan judul print di kertas dengan format rapi */
+            .print-only { 
+                display: block !important; 
+                text-align: center; 
+                font-size: 16px; 
+                margin-top: -10px;
+                margin-bottom: 15px;
+            }
+            
+            /* Judul SMAN 9 diperkecil sedikit agar tidak memakan tempat */
+            h1 { font-size: 18px; margin-bottom: 5px; }
+
             /* 4. Rapatkan jarak antar siswa (Target: 35+ anak muat 1 halaman) */
             .student-item { 
                 border-bottom: 1px solid #ccc; 
@@ -105,6 +120,7 @@
 <div class="container">
     <img src="https://lh3.googleusercontent.com/u/0/d/1NmhujSqCWX3fY30wSlAe9Ur5aR0jevXc" alt="Logo Instansi" class="main-logo">
     <h1>Presensi Halangan Shalat<br>SMAN 9 Surabaya</h1>
+    <h2 id="judulPrint" class="print-only"></h2>
     <div class="controls">
         <select id="kelasSelect">
             <option value="">-- Pilih Kelas --</option>
@@ -174,7 +190,8 @@
     function loadData() {
         const kelas = document.getElementById('kelasSelect').value;
         if (!kelas) return alert("Pilih kelas terlebih dahulu");
-        
+
+        document.getElementById('judulPrint').innerText = "Rekap Kelas: " + kelas;
         showLoading(true);
         fetch(`${API_URL}?action=get_data&kelas=${kelas}`)
             .then(res => res.json())
